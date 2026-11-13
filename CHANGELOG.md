@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+Keep identity files outside public roots; default to a dedicated public folder and block state paths. Bound incoming application work with concurrency and rate limits.
+
 ## 0.2.0
 
 - Reject destination hashes from other protocols before opening a client link.

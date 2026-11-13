@@ -2,7 +2,7 @@
 
 A separately distributable Python library for HTML, CSS, images and web applications over Reticulum, using dedicated **`nomadpl.node` destinations**.
 
-Version 0.2.0 is an experimental, pre-1.0 release. APIs may change; see the changelog before upgrading.
+Version 0.2.1 is an experimental, pre-1.0 release. APIs may change; see the changelog before upgrading.
 
 For development, see [CONTRIBUTING.md](CONTRIBUTING.md). GitHub publication and distribution checks are in [RELEASING.md](RELEASING.md); version history is in [CHANGELOG.md](CHANGELOG.md).
 
@@ -115,6 +115,25 @@ python -m pip install build
 python -m build
 ```
 
-Distribute `dist/nomadpl-0.2.0-py3-none-any.whl` or the source archive. Installation does not depend on the sibling projects or the developer's source paths. Nothing is published to a package registry automatically. NomadPL code is MIT-licensed; the separately installed Reticulum dependency retains its own license. See [the wire protocol](docs/protocol.md) for gateway implementations.
+Distribute `dist/nomadpl-0.2.1-py3-none-any.whl` or the source archive. Installation does not depend on the sibling projects or the developer's source paths. Nothing is published to a package registry automatically. NomadPL code is MIT-licensed; the separately installed Reticulum dependency retains its own license. See [the wire protocol](docs/protocol.md) for gateway implementations.
 
-Version 0.2.0 changes the destination namespace from the initial prototype. Reuse existing identity files, but update bookmarks and browser gateway targets to the newly printed addresses. The old 0.1.0 destination addresses are not NomadPL 0.2.0 addresses.
+Version 0.2.1 changes the destination namespace from the initial prototype. Reuse existing identity files, but update bookmarks and browser gateway targets to the newly printed addresses. The old 0.1.0 destination addresses are not NomadPL 0.2.1 addresses.
+
+## Security notes for 0.2.1
+
+The default static root is now `public/`, which must exist. Keep identity keys,
+databases and other private files outside every public root. The CLI checks all
+configured identity paths against all static roots before loading keys. Static
+serving also denies `state` directories, including encoded and case-varied URLs.
+Library integrations must keep their private files outside `StaticSite` roots.
+
+If you ran 0.2.0 with its default root and identity paths on a reachable network,
+treat the old identity as potentially disclosed. Move private state outside the
+public tree and generate a new identity; its destination address will change.
+There is no reliable way to revoke a copied private key.
+
+Sites admit at most eight concurrent application requests, with a sustained rate
+of eight per second and a burst of sixteen. `Site` accepts `max_requests`,
+`request_rate` and `request_burst` to tune these limits. Excess requests receive
+503. These limits protect application work after Reticulum receives a request;
+they do not bound all underlying links, parsing or network traffic.

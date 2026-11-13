@@ -9,6 +9,7 @@ from unittest.mock import patch
 import RNS
 
 from nomadpl import Limits, Request, Response, WSGIApplication
+from nomadpl.admission import RequestGate
 from nomadpl.gateway import Gateway
 from nomadpl.transport import Client, Site
 
@@ -73,6 +74,7 @@ class WSGIErrorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "render failed"):
             app(Request("GET", "/"))
         site = Site.__new__(Site)
+        site._gate = RequestGate()
         site.app, site.limits = app, Limits()
         with self.assertLogs(level="ERROR"):
             response = site._respond(

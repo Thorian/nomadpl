@@ -42,3 +42,7 @@ Shareable addresses use `nomadpl://<32-hex NomadPL destination>/path?query#fragm
 Clients verify that the recalled identity and `nomadpl.node` namespace reproduce the selected destination hash before opening a link. A NomadNet or other protocol address must be rejected, even if that identity also hosts a NomadPL site.
 
 Public static sites permit anonymous incoming links, as ordinary public NomadNet sites do. A custom application can implement access control. A provided `Client(identity=...)` identifies its Reticulum link, but this version does not translate that identity into a web authentication principal. Host applications must define that policy explicitly.
+
+## Application admission (0.2.1)
+
+Sites reject work beyond their concurrency or token-bucket admission limits with an ordinary 503 response. This does not change the wire version or destination namespace. Static hosts must keep private keys outside their public roots; the CLI enforces this and defaults to `public/`. Static serving denies directories named `state`.

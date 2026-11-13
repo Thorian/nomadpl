@@ -29,7 +29,7 @@ def _build_parser():
     parser.add_argument("--timeout", type=float, default=120)
     sub = parser.add_subparsers(dest="command", required=True)
     serve = sub.add_parser("serve", help="Serve static files or a WSGI application")
-    serve.add_argument("--root", default=".")
+    serve.add_argument("--root", default="public")
     serve.add_argument("--identity", default="state/identity")
     serve.add_argument("--name", default="NomadPL")
     serve.add_argument("--app", help="WSGI callable as module:attribute")
@@ -85,6 +85,14 @@ def _run_sites(args, limits, parser):
             }
         ]
         base = Path.cwd()
+    # Check every identity against every static root before loading or announcing keys.
+    identity_paths = [(base / item["identity"]).resolve() for item in definitions]
+    roots = [
+        (base / item["root"]).resolve() for item in definitions if not item.get("app")
+    ]
+    for identity_path in identity_paths:
+        if any(identity_path.is_relative_to(root) for root in roots):
+            raise ValueError("Identity files must be outside every public static root")
     sites, identities = [], set()
     for definition in definitions:
         identity_path = (base / definition["identity"]).resolve()

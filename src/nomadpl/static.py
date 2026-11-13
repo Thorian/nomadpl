@@ -43,7 +43,10 @@ class StaticSite:
         segments = path.split("/")
         # Deny dot files, explicit traversal and Windows filesystem aliases.
         if any(
-            part.startswith(".") or ":" in part or part.endswith((" ", "."))
+            part.startswith(".")
+            or part.lower() == "state"
+            or ":" in part
+            or part.endswith((" ", "."))
             for part in segments
             if part
         ):
@@ -61,7 +64,10 @@ class StaticSite:
             if not file.is_relative_to(self.root):
                 return Response.text(403, "Forbidden")
         if (
-            any(part.startswith(".") for part in file.relative_to(self.root).parts)
+            any(
+                part.startswith(".") or part.lower() == "state"
+                for part in file.relative_to(self.root).parts
+            )
             or file.name.endswith(".allowed")
             or Path(str(file) + ".allowed").exists()
         ):

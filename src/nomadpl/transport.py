@@ -5,6 +5,7 @@ import threading
 import time
 from pathlib import Path
 
+from .admission import RequestGate
 from .http import Limits, Request, Response
 
 REQUEST_PATH = "/nomadpl/http"
@@ -33,13 +34,24 @@ def load_identity(path):
 class Site:
     """Expose a web application on its own nomadpl.node destination."""
 
-    def __init__(self, identity, app, *, name="NomadPL", limits=Limits()):
+    def __init__(
+        self,
+        identity,
+        app,
+        *,
+        name="NomadPL",
+        limits=Limits(),
+        max_requests=8,
+        request_rate=8,
+        request_burst=16,
+    ):
         """Register the web exchange handler on a dedicated nomadpl.node destination."""
         import RNS
 
         if not 1 <= len(name.encode("utf-8")) <= 128:
             raise ValueError("Site name must be 1–128 UTF-8 bytes")
         self.app, self.name, self.limits = app, name, limits
+        self._gate = RequestGate(max_requests, request_rate, request_burst)
         self.destination = RNS.Destination(
             identity, RNS.Destination.IN, RNS.Destination.SINGLE, *ASPECTS
         )
@@ -63,6 +75,17 @@ class Site:
         self.destination.announce(app_data=self.name.encode("utf-8"))
 
     def _respond(self, path, data, request_id, link_id, remote_identity, requested_at):
+        """Reject excess work before parsing requests or accessing application state."""
+        with self._gate.admit() as accepted:
+            if not accepted:
+                return Response.text(503, "Site busy; try again later").to_wire()
+            return self._handle_request(
+                path, data, request_id, link_id, remote_identity, requested_at
+            )
+
+    def _handle_request(
+        self, path, data, request_id, link_id, remote_identity, requested_at
+    ):
         """
         Validate the exchange and turn application failures into bounded responses.
         """

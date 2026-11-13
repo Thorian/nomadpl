@@ -6,6 +6,7 @@ from pathlib import Path
 from wsgiref.validate import validator
 
 from nomadpl import URL, Limits, Request, Response, StaticSite, WSGIApplication
+from nomadpl.admission import RequestGate
 from nomadpl.gateway import Gateway
 from nomadpl.transport import Site
 
@@ -145,6 +146,7 @@ class ProtocolTests(unittest.TestCase):
     def test_site_reports_invalid_envelope(self):
         """Return a protocol error for an incomplete web request envelope."""
         site = Site.__new__(Site)
+        site._gate = RequestGate()
         site.limits = Limits()
         response = site._respond("/nomadpl/http", {}, None, None, None, None)
         self.assertEqual(response["status"], 400)

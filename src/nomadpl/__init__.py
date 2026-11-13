@@ -6,7 +6,7 @@ from .transport import Client, Site
 from .urls import URL
 from .wsgi import WSGIApplication
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __all__ = [
     "Request",
     "Response",
