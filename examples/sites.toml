@@ -1,0 +1,9 @@
+[[sites]]
+name = "NomadPL Home"
+identity = "state/home.identity"
+root = "site"
+
+[[sites]]
+name = "NomadPL Community"
+identity = "state/community.identity"
+root = "site"
