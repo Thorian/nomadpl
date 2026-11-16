@@ -28,7 +28,7 @@ class HostTests(unittest.TestCase):
         """Create a public directory separate from test configuration and keys."""
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.base = Path(self.temp.name)
+        self.base = Path(self.temp.name).resolve()
         self.root = self.base / "public"
         self.root.mkdir()
 
