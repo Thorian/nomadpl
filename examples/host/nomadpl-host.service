@@ -1,0 +1,19 @@
+[Unit]
+Description=NomadPL and NomadNet page host
+After=network.target
+
+[Service]
+Type=simple
+User=nomadpl
+Group=nomadpl
+WorkingDirectory=/srv/nomadpl
+ExecStart=/srv/nomadpl/venv/bin/nomadpl --rns-config /srv/nomadpl/reticulum host --config /srv/nomadpl/host.toml
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=40
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,6 +1,7 @@
 """Web exchanges on dedicated nomadpl.node destinations and RNS links."""
 
 import logging
+import os
 import threading
 import time
 from pathlib import Path
@@ -25,7 +26,10 @@ def load_identity(path):
     path.parent.mkdir(parents=True, exist_ok=True)
     identity = RNS.Identity()
     # Never overwrite an existing identity, including concurrent first starts.
-    with path.open("xb") as stream:
+    descriptor = os.open(
+        path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0), 0o600
+    )
+    with os.fdopen(descriptor, "wb") as stream:
         stream.write(identity.get_private_key())
     path.chmod(0o600)
     return identity
@@ -91,6 +95,9 @@ class Site:
         """
         try:
             request = Request.from_wire(data, self.limits)
+            # Authentication belongs to the verified link, never the wire envelope.
+            request.remote_identity = remote_identity.hash if remote_identity else None
+            request.link_id = link_id
         except (ValueError, TypeError, KeyError):
             return Response.text(400, "Invalid NomadPL request").to_wire()
         try:

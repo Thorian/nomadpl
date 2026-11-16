@@ -41,7 +41,7 @@ Shareable addresses use `nomadpl://<32-hex NomadPL destination>/path?query#fragm
 
 Clients verify that the recalled identity and `nomadpl.node` namespace reproduce the selected destination hash before opening a link. A NomadNet or other protocol address must be rejected, even if that identity also hosts a NomadPL site.
 
-Public static sites permit anonymous incoming links, as ordinary public NomadNet sites do. A custom application can implement access control. A provided `Client(identity=...)` identifies its Reticulum link, but this version does not translate that identity into a web authentication principal. Host applications must define that policy explicitly.
+Public static sites permit anonymous incoming links, as ordinary public NomadNet sites do. A custom application can implement access control. A provided `Client(identity=...)` identifies its Reticulum link. Since 0.3.0, applications receive the verified identity hash in the local Request.remote_identity field; this field is never accepted from the wire. WSGI receives REMOTE_USER and AUTH_TYPE. Application authorization remains separate.
 
 ## Application admission (0.2.1)
 

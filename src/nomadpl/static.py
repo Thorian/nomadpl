@@ -8,6 +8,7 @@ from datetime import timezone
 from email.utils import formatdate, parsedate_to_datetime
 from pathlib import Path
 
+from .access import permitted
 from .http import Limits, Response
 from .urls import decoded_path, target_parts
 
@@ -68,8 +69,8 @@ class StaticSite:
                 part.startswith(".") or part.lower() == "state"
                 for part in file.relative_to(self.root).parts
             )
-            or file.name.endswith(".allowed")
-            or Path(str(file) + ".allowed").exists()
+            or file.name.lower().endswith(".allowed")
+            or not permitted(file, self.root, request.remote_identity)
         ):
             return Response.text(403, "Forbidden")
         try:

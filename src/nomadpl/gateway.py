@@ -51,7 +51,7 @@ class Gateway(ThreadingHTTPServer):
 
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
-    server_version = "NomadPL/0.2"
+    server_version = "NomadPL/0.3"
 
     def setup(self):
         """Initialize the browser connection and apply the read timeout."""

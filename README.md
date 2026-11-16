@@ -2,11 +2,18 @@
 
 A separately distributable Python library for HTML, CSS, images and web applications over Reticulum, using dedicated **`nomadpl.node` destinations**.
 
-Version 0.2.1 is an experimental, pre-1.0 release. APIs may change; see the changelog before upgrading.
+Version 0.3.0 is an experimental, pre-1.0 release. APIs may change; see the changelog before upgrading.
 
 For development, see [CONTRIBUTING.md](CONTRIBUTING.md). GitHub publication and distribution checks are in [RELEASING.md](RELEASING.md); version history is in [CHANGELOG.md](CHANGELOG.md).
 
 NomadPL uses its own application name, `nomadpl`, with the `node` aspect. NomadNet remains on `nomadnetwork.node`. Even with the same identity key, these produce different destination addresses and independently scoped announcements. Existing Reticulum transports and TCP/radio gateways carry both without changes. A NomadPL-aware client or the included browser gateway handles HTTP methods, status codes, headers and binary bodies. NomadNet browsers do not discover these as NomadNet sites.
+
+## Headless server
+
+Run `nomadpl host --config examples/host/host.toml` to host NomadNet and NomadPL
+pages with PHP or other external interpreters. Each site has a persistent key,
+separate public roots and its own announcements. See the [hosting guide](docs/hosting.md)
+for setup, forms, visitor identification and service configuration.
 
 ## Install and serve
 
@@ -59,7 +66,7 @@ The remote site is mounted at `/`, so `/assets/style.css`, `../images/photo.png`
 | Cache validation | Strong ETags, Last-Modified, If-None-Match, If-Modified-Since and 304 responses |
 | Partial files | Single byte ranges, suffix ranges, If-Range, 206 and 416 |
 
-Static hosts refuse path traversal, paths outside the site root, hidden files, Windows alternate-stream paths and `.allowed` sidecars/private pages. Directory listings and executable page scripts are disabled. Add/remove files without restarting. No NomadNet `/page/...` aliases are registered.
+Static hosts refuse path traversal, paths outside the site root, hidden files, Windows alternate-stream paths and downloadable `.allowed` sidecars. A page with a sidecar requires a listed verified identity. Directory listings are disabled. The static `serve` command does not execute scripts; use `host` for external interpreters. Add/remove files without restarting. No NomadNet `/page/...` aliases are registered.
 
 This is a bounded request/response web transport, not a full replacement for every HTTP server feature. Defaults: 2 MiB request bodies, 16 MiB response bodies, 8 KiB URLs, 64 KiB headers, 120-second total network request timeout, and 32 browser connections. Configure `Limits` in library integrations; `--timeout` changes the CLI network timeout. Files and WSGI responses are buffered. WebSockets, streaming/SSE, HTTP/2, CONNECT, TRACE, chunked uploads, multipart byte ranges and reverse-proxy TLS termination are not implemented. The loopback gateway denies requests initiated by other browser origins. For public Internet HTTP serving, put your application behind a maintained HTTP server rather than exposing this local bridge.
 
@@ -90,7 +97,7 @@ A NomadPL site may coexist with a NomadNet site in the same process, even under 
 
 ## Dynamic applications
 
-Wrap a standard WSGI callable in `WSGIApplication` and pass it to `Site`. It receives the path, untouched query string, HTTP headers, method and a binary input stream; its status, repeated headers and body are returned to the browser. The adapter supplies the gateway's Host to the app for redirects. WSGI apps are responsible for authentication, cookie policy, routing and request-body parsing. Reticulum identity is not automatically an authenticated web login.
+Wrap a standard WSGI callable in `WSGIApplication` and pass it to `Site`. It receives the path, untouched query string, HTTP headers, method and a binary input stream; its status, repeated headers and body are returned to the browser. The adapter supplies the gateway's Host to the app for redirects. WSGI apps receive verified link identities through REMOTE_USER, AUTH_TYPE and nomadpl.remote_identity. They remain responsible for authorization, cookie policy, routing and request-body parsing. See the hosting guide for browser identification.
 
 ```sh
 cd examples
@@ -115,9 +122,9 @@ python -m pip install build
 python -m build
 ```
 
-Distribute `dist/nomadpl-0.2.1-py3-none-any.whl` or the source archive. Installation does not depend on the sibling projects or the developer's source paths. Nothing is published to a package registry automatically. NomadPL code is MIT-licensed; the separately installed Reticulum dependency retains its own license. See [the wire protocol](docs/protocol.md) for gateway implementations.
+Distribute `dist/nomadpl-0.3.0-py3-none-any.whl` or the source archive. Installation does not depend on the sibling projects or the developer's source paths. Nothing is published to a package registry automatically. NomadPL code is MIT-licensed; the separately installed Reticulum dependency retains its own license. See [the wire protocol](docs/protocol.md) for gateway implementations.
 
-Version 0.2.1 changes the destination namespace from the initial prototype. Reuse existing identity files, but update bookmarks and browser gateway targets to the newly printed addresses. The old 0.1.0 destination addresses are not NomadPL 0.2.1 addresses.
+Version 0.2.0 changed the destination namespace from the initial prototype. Reuse existing identity files, but update bookmarks and browser gateway targets to the newly printed addresses. The old 0.1.0 destination addresses are not current NomadPL addresses.
 
 ## Security notes for 0.2.1
 

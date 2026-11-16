@@ -1,0 +1,5 @@
+html { color-scheme: light dark; font: 1rem/1.5 system-ui, sans-serif; }
+main { max-width: 42rem; margin: 3rem auto; padding: 0 1rem; }
+label { display: block; }
+input, button { font: inherit; padding: .4rem .6rem; }
+code { overflow-wrap: anywhere; }

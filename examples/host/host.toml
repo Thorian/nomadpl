@@ -1,0 +1,29 @@
+# Paths are relative to this file. Keep state outside both public roots.
+state = "state"
+announce_interval = 3600
+script_timeout = 30
+max_requests = 8
+request_rate = 8
+request_burst = 16
+
+[interpreters.php]
+# Windows: use an absolute path to php-cgi.exe, with forward slashes.
+command = ["php-cgi", "-d", "display_errors=0", "-d", "log_errors=1", "-d", "cgi.fix_pathinfo=0"]
+suffixes = [".php"]
+output = "cgi"
+
+[[sites]]
+id = "home"
+name = "My site"
+
+[sites.nomadpl]
+root = "html"
+interpreters = ["php"]
+index = ["index.php", "index.html"]
+require_identity = false
+
+[sites.nomadnet]
+root = "micron"
+interpreters = ["php"]
+index = ["index.mu"]
+require_identity = false

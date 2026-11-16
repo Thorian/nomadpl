@@ -43,6 +43,10 @@ class WSGIApplication:
             elif key != "CONTENT_LENGTH":
                 key = "HTTP_" + key
                 environ[key] = environ[key] + "," + value if key in environ else value
+        if request.remote_identity is not None:
+            environ["AUTH_TYPE"] = "Reticulum"
+            environ["REMOTE_USER"] = request.remote_identity.hex()
+        environ["nomadpl.remote_identity"] = request.remote_identity
         result, chunks, size = {}, [], 0
         body_started = False
 

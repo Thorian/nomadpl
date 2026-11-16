@@ -79,6 +79,8 @@ class Request:
     target: str
     headers: list[tuple[str, str]] = field(default_factory=list)
     body: bytes = b""
+    remote_identity: bytes | None = field(default=None, repr=False, compare=False)
+    link_id: bytes | None = field(default=None, repr=False, compare=False)
 
     def validate(self, limits=Limits()):
         """Check the method, target, headers and body against transport limits."""

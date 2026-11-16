@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+- Add a headless multi-site host for NomadNet and NomadPL.
+- Run PHP and other configured page interpreters with CGI request data.
+- Pass verified Reticulum identities to pages and WSGI applications.
+- Support static identity allowlists through .allowed sidecars.
+- Add browser identification with an explicitly selected identity file.
+- Test real PHP forms, uploads and identified requests over both page protocols.
+
 ## 0.2.1
 
 Keep identity files outside public roots; default to a dedicated public folder and block state paths. Bound incoming application work with concurrency and rate limits.

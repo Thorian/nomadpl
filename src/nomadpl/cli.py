@@ -42,13 +42,31 @@ def _build_parser():
     )
     browse.add_argument("url", help="nomadpl://<destination>/path or destination hash")
     browse.add_argument("--port", type=int, default=8080)
+    browse.add_argument(
+        "--identity",
+        help="Existing Reticulum private identity file to identify to this site",
+    )
+    host = sub.add_parser("host", help="Run a headless NomadNet and NomadPL page host")
+    host.add_argument("--config", required=True, help="Host TOML configuration")
+    host.add_argument(
+        "--check",
+        action="store_true",
+        help="Check paths and interpreters without starting Reticulum",
+    )
     return parser
 
 
 def _run_gateway(args, limits):
     """Serve one remote site through a loopback-only browser origin."""
     url = URL.parse(args.url if "://" in args.url else "nomadpl://" + args.url + "/")
-    client = Client(url.destination, limits=limits)
+    identity = None
+    if args.identity:
+        import RNS
+
+        identity = RNS.Identity.from_file(args.identity)
+        if identity is None:
+            raise ValueError("Cannot read the selected browser identity")
+    client = Client(url.destination, limits=limits, identity=identity)
     hostname = url.destination + ".localhost"
     gateway = Gateway(
         ("127.0.0.1", args.port), client, limits=limits, canonical_host=hostname
@@ -135,6 +153,22 @@ def main():
         parser.error("timeout must be positive")
     limits = Limits(timeout=args.timeout)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+    if args.command == "host":
+        from .hosting import load_config, run_host, state_lock
+
+        try:
+            config = load_config(args.config, limits=limits)
+            if args.check:
+                print(f"Configuration OK: {len(config.sites)} site(s)")
+                return
+            with state_lock(config.state):
+                import RNS
+
+                RNS.Reticulum(configdir=args.rns_config)
+                run_host(config)
+        except (ValueError, OSError, KeyError, RuntimeError) as exc:
+            parser.exit(1, f"Host failed: {exc}\n")
+        return
     import RNS
 
     RNS.Reticulum(configdir=args.rns_config)

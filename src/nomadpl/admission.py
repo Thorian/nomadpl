@@ -19,6 +19,18 @@ class RequestGate:
         self.tokens, self.updated = float(burst), clock()
         self.slots = threading.BoundedSemaphore(max_requests)
         self.lock = threading.Lock()
+        self.condition = threading.Condition(self.lock)
+        self.active, self.closed = 0, False
+
+    def stop(self):
+        """Refuse new application work during host shutdown."""
+        with self.lock:
+            self.closed = True
+
+    def wait_idle(self, timeout):
+        """Wait a bounded time for admitted handlers to finish."""
+        with self.condition:
+            return self.condition.wait_for(lambda: self.active == 0, timeout)
 
     @contextmanager
     def admit(self):
@@ -30,11 +42,19 @@ class RequestGate:
                 self.burst, self.tokens + max(0, now - self.updated) * self.rate
             )
             self.updated = now
-            if self.tokens >= 1 and self.slots.acquire(blocking=False):
+            if (
+                not self.closed
+                and self.tokens >= 1
+                and self.slots.acquire(blocking=False)
+            ):
                 self.tokens -= 1
+                self.active += 1
                 accepted = True
         try:
             yield accepted
         finally:
             if accepted:
-                self.slots.release()
+                with self.condition:
+                    self.active -= 1
+                    self.slots.release()
+                    self.condition.notify_all()
