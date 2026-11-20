@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Retry path discovery within the request deadline when the network connects after a page is opened.
+
 ## 0.3.0
 
 - Add a headless multi-site host for NomadNet and NomadPL.

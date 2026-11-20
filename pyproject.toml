@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nomadpl"
-version = "0.3.0"
+version = "0.3.1"
 description = "HTML, CSS and web applications over Reticulum"
 readme = "README.md"
 requires-python = ">=3.11"

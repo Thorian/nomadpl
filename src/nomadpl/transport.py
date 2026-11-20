@@ -145,9 +145,17 @@ class Client:
         try:
             deadline = time.monotonic() + self.limits.timeout
             if self._link is None or self._link.status != RNS.Link.ACTIVE:
-                if not RNS.Transport.has_path(self.address):
-                    RNS.Transport.request_path(self.address)
-                self._wait(lambda: RNS.Transport.has_path(self.address), deadline)
+                next_request = 0
+                while not RNS.Transport.has_path(self.address):
+                    now = time.monotonic()
+                    if now >= deadline:
+                        raise TimeoutError("Reticulum path timed out")
+                    # The first request may precede an automatic gateway
+                    # connection. Retry discovery without extending the deadline.
+                    if now >= next_request:
+                        RNS.Transport.request_path(self.address)
+                        next_request = now + 10
+                    time.sleep(0.05)
                 identity = RNS.Identity.recall(self.address)
                 if identity is None:
                     raise ConnectionError("Destination identity unavailable")

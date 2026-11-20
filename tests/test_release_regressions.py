@@ -15,6 +15,19 @@ from nomadpl.transport import Client, Site
 
 
 class DestinationTests(unittest.TestCase):
+    def test_path_discovery_retries_when_connection_arrives_later(self):
+        client = Client("ab" * 16, limits=Limits(timeout=30))
+        with (
+            patch.object(RNS.Transport, "has_path", side_effect=[False, False, True]),
+            patch.object(RNS.Transport, "request_path") as request_path,
+            patch.object(RNS.Identity, "recall", return_value=None),
+            patch("nomadpl.transport.time.monotonic", side_effect=[0, 0, 10]),
+            patch("nomadpl.transport.time.sleep"),
+        ):
+            with self.assertRaisesRegex(ConnectionError, "identity unavailable"):
+                client.request(Request("GET", "/"))
+        self.assertEqual(request_path.call_count, 2)
+
     def test_wrong_namespace_rejected_before_link_creation(self):
         """A valid identity cannot silently substitute its NomadPL address for another aspect."""
         identity = RNS.Identity()
